@@ -19,7 +19,9 @@ cost_optimizer/
     └── index.html        # The Frontend
 
 2.The Python Backend (app.py)
-This file handles the logic. It uses a Greedy Algorithm to sort items by their "Value per Dollar" ratio to ensure efficiency.
+
+This file handles the logic. 
+It uses a Greedy Algorithm to sort items by their "Value per Dollar" ratio to ensure efficiency.
 from flask import Flask, render_template, request
 
 app = Flask(__name__)
@@ -119,24 +121,31 @@ if __name__ == '__main__':
 This file provides a clean interface to input data and view the results.
 
 4. How to Run It
+   
    Open your terminal or command prompt.
    Navigate to the folder: cd cost_optimizer
    Run the application:
-   bash
+   
+bash
 python app.py
 
 You will see output indicating the server is running (usually Running on http://127.0.0.1:5000).
 
 5.Open your web browser and go to: http://127.0.0.1:5000
 How it works
+
 Input: You enter a budget of $100 and list 3 items:
+
 Server A: Cost $40, Value 40
 Server B: Cost $50, Value 50
 Server C: Cost $10, Value 40
+
 Calculation:
+
 Server C is the best value ($1 = 4 Value), so it buys that first ($10 spent).
 Server B is next ($1 = 1 Value).
 Server A is next ($1 = 1 Value).
+
 Result: The app tells you exactly which servers to buy to get the most performance for your specific budget.
 
 
