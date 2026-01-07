@@ -1,94 +1,113 @@
-from flask import Flask, render_template, request
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost Optimizer App</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+        input, button { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #28a745; color: white; border: none; cursor: pointer; margin-top: 20px; font-size: 16px; }
+        button:hover { background-color: #218838; }
+        .item-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .item-row input { margin-top: 0; }
+        .results { margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; }
+        .summary { background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin-top: 20px; }
+        .add-btn { background: #007bff; width: auto; margin-top: 0; padding: 5px 15px; font-size: 14px; }
+    </style>
+</head>
+<body>
 
-app = Flask(__name__)
+<div class="container">
+    <h1>🚀 Resource Cost Optimizer</h1>
+    <p>Enter your budget and a list of resources (Cost vs. Value). The algorithm will maximize your Return on Investment (ROI).</p>
 
-def optimize_knapsack(budget, items):
-    """
-    Solves the Fractional Knapsack Problem.
-    Goal: Maximize total value within a budget limit.
-    """
-    # Calculate value/cost ratio for each item and sort descending
-    # This ensures we pick the "best bang for the buck" items first
-    items.sort(key=lambda x: x['value'] / x['cost'], reverse=True)
-    
-    remaining_budget = float(budget)
-    total_value = 0
-    total_cost = 0
-    selections = []
+    <form method="POST">
+        <label>Total Budget ($):</label>
+        <input type="number" name="budget" placeholder="e.g. 1000" required>
 
-    for item in items:
-        cost = item['cost']
-        value = item['value']
+        <h3>Resources List</h3>
+        <div id="item-list">
+            <!-- Default 3 Rows -->
+            <div class="item-row">
+                <input type="text" name="item_name" placeholder="Name (e.g. Server A)" required>
+                <input type="number" name="item_cost" placeholder="Cost ($)" required>
+                <input type="number" name="item_value" placeholder="Value (Score)" required>
+            </div>
+            <div class="item-row">
+                <input type="text" name="item_name" placeholder="Name (e.g. Server B)" required>
+                <input type="number" name="item_cost" placeholder="Cost ($)" required>
+                <input type="number" name="item_value" placeholder="Value (Score)" required>
+            </div>
+            <div class="item-row">
+                <input type="text" name="item_name" placeholder="Name (e.g. Server C)" required>
+                <input type="number" name="item_cost" placeholder="Cost ($)" required>
+                <input type="number" name="item_value" placeholder="Value (Score)" required>
+            </div>
+        </div>
+
+        <button type="button" class="add-btn" onclick="addItem()">+ Add Item</button>
+        <button type="submit">Optimize Costs</button>
+    </form>
+
+    {% if result %}
+    <div class="results">
+        <h2>Optimization Results</h2>
         
-        if remaining_budget <= 0:
-            break
-            
-        # If we can afford the whole item
-        if cost <= remaining_budget:
-            selections.append({
-                'name': item['name'],
-                'amount': 1.0, # 100% of the item
-                'cost': cost,
-                'value': value
-            })
-            total_value += value
-            total_cost += cost
-            remaining_budget -= cost
-        else:
-            # If we can't afford the whole item, buy a fraction of it
-            # (This works for things like fuel, bandwidth, raw materials)
-            fraction = remaining_budget / cost
-            partial_cost = remaining_budget
-            partial_value = value * fraction
-            
-            selections.append({
-                'name': item['name'],
-                'amount': round(fraction * 100, 2), # Show percentage
-                'cost': partial_cost,
-                'value': partial_value
-            })
-            total_value += partial_value
-            total_cost += partial_cost
-            remaining_budget = 0
-            break
+        <div class="summary">
+            <p><strong>Total Cost:</strong> ${{ result.total_cost }}</p>
+            <p><strong>Total Value Gained:</strong> {{ result.total_value }}</p>
+            <p><strong>Budget Remaining:</strong> ${{ result.remaining_budget }}</p>
+        </div>
 
-    return {
-        'selections': selections,
-        'total_value': round(total_value, 2),
-        'total_cost': round(total_cost, 2),
-        'remaining_budget': round(remaining_budget, 2)
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Amount</th>
+                    <th>Cost</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in result.selections %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>
+                        {% if item.amount == 1.0 %}
+                            100%
+                        {% else %}
+                            {{ item.amount }}%
+                        {% endif %}
+                    </td>
+                    <td>${{ item.cost }}</td>
+                    <td>{{ item.value }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function addItem() {
+        const div = document.createElement('div');
+        div.className = 'item-row';
+        div.innerHTML = `
+            <input type="text" name="item_name" placeholder="Name" required>
+            <input type="number" name="item_cost" placeholder="Cost ($)" required>
+            <input type="number" name="item_value" placeholder="Value (Score)" required>
+        `;
+        document.getElementById('item-list').appendChild(div);
     }
+</script>
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    result = None
-    
-    if request.method == 'POST':
-        try:
-            # Get the budget from the form
-            budget = request.form.get('budget')
-            
-            # Collect items dynamically from the form
-            items = []
-            names = request.form.getlist('item_name')
-            costs = request.form.getlist('item_cost')
-            values = request.form.getlist('item_value')
-            
-            for i in range(len(names)):
-                if names[i] and costs[i] and values[i]:
-                    items.append({
-                        'name': names[i],
-                        'cost': float(costs[i]),
-                        'value': float(values[i])
-                    })
-            
-            # Run the optimization algorithm
-            result = optimize_knapsack(budget, items)
-            
-        except ValueError:
-            result = {'error': 'Please enter valid numbers.'}
-
-    return render_template('index.html', result=result)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+</body>
+</html>
