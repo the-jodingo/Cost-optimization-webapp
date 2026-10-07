@@ -1,3 +1,8 @@
+[![Python](https://img.shields.io/badge/Python-3-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-web%20app-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![Algorithm](https://img.shields.io/badge/algorithm-fractional%20knapsack-blueviolet)](https://en.wikipedia.org/wiki/Continuous_knapsack_problem)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 # Cost Optimization Web App
 
 A Flask web app that solves the **fractional knapsack problem**: given a fixed
