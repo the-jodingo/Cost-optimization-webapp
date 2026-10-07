@@ -1,57 +1,115 @@
-[![Python](https://img.shields.io/badge/Python-3-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-web%20app-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![CI](https://github.com/the-jodingo/Cost-optimization-webapp/actions/workflows/ci.yml/badge.svg)](https://github.com/the-jodingo/Cost-optimization-webapp/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![Algorithm](https://img.shields.io/badge/algorithm-fractional%20knapsack-blueviolet)](https://en.wikipedia.org/wiki/Continuous_knapsack_problem)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 # Cost Optimization Web App
 
 A Flask web app that solves the **fractional knapsack problem**: given a fixed
-budget and a list of resources (each with a cost and a value), it calculates how
-much of each to take to maximise total value without exceeding the budget.
+budget and a list of resources (each with a unit cost and a unit value), it
+allocates the budget to maximise total value.
+
+## Table of contents
+
+- [The problem](#the-problem)
+- [Requirements](#requirements)
+- [Quick start](#quick-start)
+- [Usage](#usage)
+- [How it works](#how-it-works)
+- [Testing and CI](#testing-and-ci)
+- [Project structure](#project-structure)
+- [Accessibility](#accessibility)
+- [License](#license)
 
 ## The problem
 
 | | |
 |---|---|
 | **Goal** | Maximise total value within a fixed budget |
-| **Input** | A list of resources, each with a cost and a value |
-| **Output** | The optimal allocation, total spend, and total value |
-| **Algorithm** | Greedy by value-per-dollar (optimal for the *fractional* variant) |
+| **Input** | A budget, plus resources with a unit cost and unit value |
+| **Output** | How much of each resource to take, total spend, total value |
+| **Algorithm** | Greedy by value-per-unit-cost |
 
-## Setup
+## Requirements
 
-```bash
-pip install flask
-mkdir -p cost_optimizer/templates
-```
+- Python 3.11 or newer
 
-Expected layout:
-
-```
-cost_optimizer/
-├── app.py          # Flask backend
-└── templates/
-    └── index.html  # Frontend
-```
+## Quick start
 
 ```bash
+git clone https://github.com/the-jodingo/Cost-optimization-webapp.git
+cd Cost-optimization-webapp
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
 python app.py
-# open http://127.0.0.1:5000
 ```
 
-## Running
+Open <http://127.0.0.1:5000>.
 
-Enter a budget and one or more resources (name, cost, value). The app returns a
-table of allocations with the percentage taken from each resource, plus the
-total cost and total value.
+## Usage
 
-## Notes
+1. Enter your total budget.
+2. Add one or more resources — a name, a unit cost, and a unit value.
+3. Press **Optimize**.
 
-- The greedy approach is **optimal** for the fractional knapsack. If you need
-  the 0/1 variant (whole items only), it becomes a dynamic-programming problem
-  and the greedy result is only an approximation.
-- See `Cost.python` for the frontend template source.
+The result table shows, per resource, the percentage taken, the spend, and the
+value gained, followed by totals.
+
+### Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/` | The form |
+| `POST` | `/` | Runs the optimisation and renders the result |
+| `GET` | `/health` | `{"status": "healthy", "service": "cost-optimizer"}` |
+
+## How it works
+
+`optimize()` sorts resources by value-per-unit-cost descending, then takes as
+much as the remaining budget allows from each in turn, taking a fraction of the
+last one if the budget runs out mid-resource.
+
+**Why greedy is correct here:** for the *continuous* (fractional) knapsack, the
+greedy-by-ratio strategy is provably optimal. For the 0/1 variant — where you
+must take a resource whole or not at all — greedy is only an approximation and
+the exact answer needs dynamic programming.
+
+## Testing and CI
+
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```
+
+GitHub Actions runs the suite on Python 3.11 and 3.12 for every push and PR.
+
+## Project structure
+
+```
+Cost-optimization-webapp/
+├── app.py                  # Flask app + optimise()
+├── templates/index.html    # Front end
+├── tests/test_app.py       # pytest suite
+├── requirements.txt
+├── requirements-dev.txt
+└── .github/workflows/ci.yml
+```
+
+## Accessibility
+
+The interface is built to WCAG 2.1 AA basics:
+
+- semantic landmarks (`main`), headings in order, and a real `<table>` with
+  `<caption>` and `<th scope="col">`
+- every input has an associated `<label>`
+- visible focus outlines (`:focus-visible`), 3 px, high contrast
+- errors announced via `role="alert"`
+- body text meets AA contrast; layout is usable down to 320 px wide
 
 ## License
 
-MIT
+[MIT](LICENSE) © Joash Odingo
